@@ -2,4 +2,7 @@ import Game from './src/game.js' // Полный путь, включая .js т
 
 const game = new Game()
 
+// Добавляем константу game в глобальный объект window
+window.game = game;
+
 console.log(game)
