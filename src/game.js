@@ -31,6 +31,9 @@ export default class Game {
   activePiece = {
     x: 0,
     y: 0,
+    get blocks() {
+      return this.rotations[this.rotationIndex]
+    },
     blocks: [
       [0,1,0],
       [1,1,1],
@@ -66,6 +69,34 @@ export default class Game {
     }
   }
 
+  // Нужен, чтобы поворачивать фигуру
+  rotatePiece() {
+    const blocks = this.activePiece.blocks
+    const length = blocks.length
+    
+    // Создаем пустой массив с нулями
+    const temp = []
+    for (let i = 0; i < length; i++) {
+      temp[i] = new Array(length).fill(0);
+    }
+
+    // Вставляем значения ротации фигуры
+    for (let y = 0; y < length; y++) {
+      for (let x = 0; x < length; x++) {
+        temp[x][y] = blocks[length - 1 - y][x]
+      }
+    }
+
+    // Присваиваем результат
+    this.activePiece.blocks = temp
+
+    // Если есть столкновение, то присваиваем обратно значение
+    if (this.hasCollision()) {
+      this.activePiece.blocks = blocks
+    }
+
+  }
+
   // Проверяет вышла ли фигура за границы поля и стулкнулась ли она с другой фигурой
   hasCollision() {
     const { y: pieceY, x: pieceX, blocks } = this.activePiece
@@ -74,7 +105,7 @@ export default class Game {
       for (let x = 0; x < blocks[y].length; x++) {
 
         if (
-          blocks[y][x] !== 0  && // Проверяем наличие блока в фигуре
+          blocks[y][x] && // Проверяем наличие блока в фигуре
           ((this.playfield[pieceY + y] === undefined || this.playfield[pieceY + y][pieceX + x] === undefined) || // Проверяем находится ли блок в пределах игрового поля
           this.playfield[pieceY + y][pieceX + x]) // Проверяем свободно ли место в игровом поле
         ) {
@@ -94,7 +125,7 @@ export default class Game {
     for (let y = 0; y < blocks.length; y++) {
 
       for (let x = 0; x < blocks[y].length; x++) {
-        if (blocks[y][x] !== 0) {
+        if (blocks[y][x]) {
           this.playfield[pieceY + y][pieceX + x] = blocks[y][x]
         }
       }
