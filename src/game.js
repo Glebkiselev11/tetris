@@ -7,18 +7,9 @@ export default class Game {
   playfield = this.createPlayField()
 
   // Активное поле
-  activePiece = {
-    x: 0,
-    y: 0,
-    get blocks() {
-      return this.rotations[this.rotationIndex]
-    },
-    blocks: [
-      [0,1,0],
-      [1,1,1],
-      [0,0,0]
-    ]
-  }
+  activePiece = this.createPiece()
+  // Ссылка на следующую фигуру
+  nextPiece = this.createPiece()
 
   // Метод для получения состояния, поле, счет
   getState() {
@@ -68,6 +59,78 @@ export default class Game {
     return playfield
   }
 
+  // Создает новую фигуру
+  createPiece() {
+    // Получаем индекс, чтобы рандомно сгенерировать одну из 7 фигур
+    const index = Math.floor(Math.random() * 7)
+    const type = 'IJLOSTZ'[index]
+    const piece = {}
+
+    // фигуры состоят из чисел, для того, чтобы на основе этих чисел в классе view добавить цвет фигурам
+    switch(type) {
+      case 'I':
+        piece.blocks = [
+          [0,0,0,0],
+          [1,1,1,1],
+          [0,0,0,0],
+          [0,0,0,0],
+        ]
+        break
+      case 'J':
+        piece.blocks = [
+          [0,0,0],
+          [2,2,2],
+          [0,0,2]
+        ]
+        break
+      case 'L':
+        piece.blocks = [
+          [0,0,0],
+          [3,3,3],
+          [3,0,0]
+        ]
+        break
+      case 'O':
+        piece.blocks = [
+          [0,0,0,0],
+          [0,4,4,0],
+          [0,4,4,0],
+          [0,0,0,0],
+        ]
+        break
+      case 'S':
+        piece.blocks = [
+          [0,0,0],
+          [0,5,5],
+          [5,5,0]
+        ]
+        break
+      case 'T':
+        piece.blocks = [
+          [0,0,0],
+          [6,6,6],
+          [0,6,0]
+        ]
+        break
+      case 'Z':
+        piece.blocks = [
+          [0,0,0],
+          [7,7,0],
+          [0,7,7]
+        ]
+        break
+      default:
+        throw new Error('Неизвестый тип фигуры')
+    }
+
+    // Задаем генерацию фигуры по центру
+    piece.x = Math.floor((10 - piece.blocks[0].length) / 2)
+    piece.y = -1
+
+    return piece
+  }
+
+
   // Двигает фигуру влево
   movePieceLeft() {
     this.activePiece.x -= 1
@@ -93,6 +156,8 @@ export default class Game {
     if (this.hasCollision()) {
       this.activePiece.y -= 1
       this.lockPiece()
+      
+      this.updatePieces()
     }
   }
 
@@ -175,6 +240,11 @@ export default class Game {
         }
       }
     }
+  }
+
+  updatePieces() {
+    this.activePiece = this.nextPiece
+    this.nextPiece = this.createPiece()
   }
   
 }
