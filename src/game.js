@@ -1,7 +1,14 @@
 export default class Game {
+
+  static points = {
+    '1': 40,
+    '2': 100,
+    '3': 300,
+    '4': 1200
+  }
+
   score = 0
-  lines = 0
-  level = 0
+  lines = 19
 
   // Игровое поле
   playfield = this.createPlayField()
@@ -10,6 +17,11 @@ export default class Game {
   activePiece = this.createPiece()
   // Ссылка на следующую фигуру
   nextPiece = this.createPiece()
+
+  get level() {
+    // Вычисляем уровень, как только собрали 10 линий, то переходим на след уровень
+    return Math.floor(this.lines * 0.1)
+  }
 
   // Метод для получения состояния, поле, счет
   getState() {
@@ -157,6 +169,11 @@ export default class Game {
       this.activePiece.y -= 1
       this.lockPiece()
       
+      // Проверяем на заполненность нижнего ряда, чтобы удалить его
+      const clearedLines = this.clearLines()
+      
+      // Обновляем очки, когда удаляем линию
+      this.updateScore(clearedLines)
       this.updatePieces()
     }
   }
@@ -239,6 +256,51 @@ export default class Game {
           this.playfield[pieceY + y][pieceX + x] = blocks[y][x]
         }
       }
+    }
+  }
+
+  // Метод для удаления линии, когда она заполнена
+  clearLines() {
+    const rows = 20
+    const columns = 10
+    let lines = []
+
+    for (let y = rows - 1; y >= 0; y--) {
+      let numberOfBlocks = 0
+
+      for (let x = 0; x < columns; x++) {
+        if(this.playfield[y][x] !== 0) {
+          numberOfBlocks += 1
+        }
+      }
+
+      if (numberOfBlocks === 0) {
+        // Если на нижней линии ноль блоков, ты смысла продолжать дальше нет
+        break
+      } else if (numberOfBlocks < columns) {
+        continue
+      } else if (numberOfBlocks === columns) {
+        lines.unshift(y)
+      }
+
+    }
+
+    for (let index of lines) {
+      // Обрезаем строку
+      this.playfield.splice(index, 1)
+
+      // Добавляем сверху новую пустую строку
+      this.playfield.unshift(new Array(columns).fill(0))
+    }
+
+    return lines.length
+  }
+
+  // Повышаем счет при удалении заполненной линии
+  updateScore(clearedLines) {
+    if (clearedLines > 0) {
+      this.score += Game.points[clearedLines] * (this.level + 1)
+      this.lines += clearedLines
     }
   }
 
