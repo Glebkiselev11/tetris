@@ -8,7 +8,7 @@ export default class Game {
   }
 
   score = 0
-  lines = 19
+  lines = 0
 
   // Игровое поле
   playfield = this.createPlayField()
@@ -50,7 +50,12 @@ export default class Game {
     }
 
     return {
-      playfield
+      playfield,
+      nextPiece: this.nextPiece,
+      score: this.score,
+      level: this.level,
+      lines: this.lines,
+
     }
   }
 
