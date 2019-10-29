@@ -7,16 +7,10 @@ export default class Game {
     '4': 1200
   }
 
-  score = 0
-  lines = 0
-
-  // Игровое поле
-  playfield = this.createPlayField()
-
-  // Активное поле
-  activePiece = this.createPiece()
-  // Ссылка на следующую фигуру
-  nextPiece = this.createPiece()
+  // Устанавливаем изначальные значения
+  constructor() {
+    this.reset()
+  }
 
   get level() {
     // Вычисляем уровень, как только собрали 10 линий, то переходим на след уровень
@@ -55,8 +49,19 @@ export default class Game {
       score: this.score,
       level: this.level,
       lines: this.lines,
+      isGameOver: this.topOut
 
     }
+  }
+
+  // Устанавливаем изначальные значения
+  reset() {
+    this.score = 0
+    this.lines = 0
+    this.topOut = false
+    this.playfield = this.createPlayField()
+    this.activePiece = this.createPiece()
+    this.nextPiece = this.createPiece()
   }
 
   // Генерирует поле
@@ -168,6 +173,11 @@ export default class Game {
 
   // Двигает фигуру вниз
   movePieceDown() {
+
+    if (this.topOut) {
+      return // Дополнительная проверка на то что достигли ли мы потолка
+    }
+
     this.activePiece.y += 1
 
     if (this.hasCollision()) {
@@ -181,6 +191,12 @@ export default class Game {
       this.updateScore(clearedLines)
       this.updatePieces()
     }
+
+    // Проверяем достигли ли потолка
+    if (this.hasCollision()) {
+      this.topOut = true
+    }
+
   }
 
   rotatePiece() {

@@ -11,6 +11,8 @@ export default class Controller {
     // .bind(this) нужно чтобы привизать к объекту контроллера
     document.addEventListener('keydown', this.handleKeyDown.bind(this))
 
+    document.addEventListener('keyup', this.handleKeyUp.bind(this))
+
     // Показываем начальный экран
     this.view.renderStartScreen()
   }
@@ -35,11 +37,24 @@ export default class Controller {
     this.updateView()
   }
 
+  // Перезапуск игры (при пройгрыше)
+  reset() {
+    this.game.reset()
+    this.play()
+
+  }
+
+
   updateView() {
-    if (!this.isPlaying) {
+    const state = this.game.getState()
+
+    // Если проиграли, то показываем экран Гейм овера
+    if (state.isGameOver) {
+      this.view.renderEndScreen(state)
+    } else if (!this.isPlaying) {
       this.view.renderPauseScreen()
     } else {
-      this.view.renderMainScreen(this.game.getState())
+      this.view.renderMainScreen(state)
     }
     
   }
@@ -47,11 +62,14 @@ export default class Controller {
 
   // Запускаем таймер движения
   startTimer() {
+    // Определяем скорость, с каждым лвл мы уменьшаем интервал (фигуры начинают быстрее опускаться вниз)
+    const speed = 1000 - this.game.getState().level * 100
+
     // Каждую секунду двигаем фигуру вниз
     if (!this.intervalId) {
       this.intervalId = setInterval(() => {
         this.update()
-      }, 1000)
+      }, speed > 0 ? speed : 100) // Скорость не может быть нулевой
     }
     
   }
@@ -67,9 +85,12 @@ export default class Controller {
 
   // Взаимодействие с помощью клавиатуры
   handleKeyDown(event) {
+    const state = this.game.getState()
     switch (event.keyCode) {
       case 13: // Enter
-        if (this.isPlaying) {
+        if (state.isGameOver) {
+          this.reset()
+        } else if (this.isPlaying) {
           this.pause()
         } else {
           this.play()
@@ -88,8 +109,17 @@ export default class Controller {
         this.updateView()
         break
       case 40: // Вниз
+        this.stopTimer()
         this.game.movePieceDown()
         this.updateView()
+        break
+    }
+  }
+
+  handleKeyUp(event) {
+    switch (event.keyCode) {
+      case 40: // Вниз
+        this.startTimer()
         break
     }
   }
